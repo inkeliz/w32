@@ -515,6 +515,14 @@ func LoadCursor(instance HINSTANCE, cursorName *uint16) HCURSOR {
 	return HCURSOR(ret)
 }
 
+func LoadCursorInt(cursor int) HCURSOR {
+	ret, _, _ := loadCursor.Call(
+		uintptr(0),
+		uintptr(uint16(cursor)),
+	)
+	return HCURSOR(ret)
+}
+
 func ShowWindow(hwnd HWND, cmdshow int) bool {
 	ret, _, _ := showWindow.Call(
 		uintptr(hwnd),
