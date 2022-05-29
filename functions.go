@@ -59,6 +59,7 @@ var (
 	getWindowRect                    = user32.NewProc("GetWindowRect")
 	moveWindow                       = user32.NewProc("MoveWindow")
 	screenToClient                   = user32.NewProc("ScreenToClient")
+	setWindowRgn                     = user32.NewProc("SetWindowRgn")
 	callWindowProc                   = user32.NewProc("CallWindowProcW")
 	setWindowLong                    = user32.NewProc("SetWindowLongW")
 	setWindowLongPtr                 = user32.NewProc("SetWindowLongPtrW")
@@ -293,6 +294,7 @@ var (
 	createCompatibleDC        = gdi32.NewProc("CreateCompatibleDC")
 	createCompatibleBitmap    = gdi32.NewProc("CreateCompatibleBitmap")
 	createBitmap              = gdi32.NewProc("CreateBitmap")
+	createRoundRectRgn        = gdi32.NewProc("CreateRoundRectRgn")
 	createDC                  = gdi32.NewProc("CreateDCW")
 	createDIBSection          = gdi32.NewProc("CreateDIBSection")
 	createEnhMetaFile         = gdi32.NewProc("CreateEnhMetaFileW")
@@ -568,9 +570,7 @@ func CreateWindowStr(className, windowName string,
 	)
 }
 
-func CreateWindowEx(exStyle uint, className, windowName *uint16,
-	style uint, x, y, width, height int, parent HWND, menu HMENU,
-	instance HINSTANCE, param unsafe.Pointer) HWND {
+func CreateWindowEx(exStyle uint, className, windowName *uint16, style int, x, y, width, height int, parent HWND, menu HMENU, instance HINSTANCE, param unsafe.Pointer) HWND {
 	ret, _, _ := createWindowEx.Call(
 		uintptr(exStyle),
 		uintptr(unsafe.Pointer(className)),
@@ -753,6 +753,19 @@ func ScreenToClient(hwnd HWND, x, y int) (X, Y int, ok bool) {
 		uintptr(unsafe.Pointer(&pt)),
 	)
 	return int(pt.X), int(pt.Y), ret != 0
+}
+
+func SetWindowRgn(hwnd HWND, hrgn HRGN, redraw bool) uintptr {
+	i := 0
+	if redraw {
+		i = 1
+	}
+	ret, _, _ := setWindowRgn.Call(
+		uintptr(hwnd),
+		uintptr(hrgn),
+		uintptr(i),
+	)
+	return ret
 }
 
 func CallWindowProc(preWndProc uintptr, hwnd HWND, msg uint32, wParam, lParam uintptr) uintptr {
@@ -1498,21 +1511,8 @@ func ShowCursor(show bool) int {
 	return int(int32(ret))
 }
 
-func LoadImage(
-	inst HINSTANCE,
-	name *uint16,
-	typ uint,
-	desiredWidth, desiredHeight int,
-	load uint,
-) HANDLE {
-	ret, _, _ := loadImage.Call(
-		uintptr(inst),
-		uintptr(unsafe.Pointer(name)),
-		uintptr(typ),
-		uintptr(desiredWidth),
-		uintptr(desiredHeight),
-		uintptr(load),
-	)
+func LoadImage(inst HINSTANCE, res uint32, typ uint32, cx, cy int, fuload uint32) HICON {
+	ret, _, _ := loadImage.Call(uintptr(inst), uintptr(res), uintptr(typ), uintptr(cx), uintptr(cy), uintptr(fuload))
 	return HANDLE(ret)
 }
 
@@ -2957,6 +2957,18 @@ func CreateBitmap(width, height int, planes, bitCount uint, bits unsafe.Pointer)
 		uintptr(bits),
 	)
 	return HBITMAP(ret)
+}
+
+func CreateRoundRectRgn(x1, y1, x2, y2, w, h uint32) HRGN {
+	ret, _, _ := createRoundRectRgn.Call(
+		uintptr(x1),
+		uintptr(y1),
+		uintptr(x2),
+		uintptr(y2),
+		uintptr(w),
+		uintptr(h),
+	)
+	return HRGN(ret)
 }
 
 func CreateDC(lpszDriver, lpszDevice, lpszOutput *uint16, lpInitData *DEVMODE) HDC {
