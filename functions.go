@@ -570,7 +570,7 @@ func CreateWindowStr(className, windowName string,
 	)
 }
 
-func CreateWindowEx(exStyle uint, className, windowName *uint16, style int, x, y, width, height int, parent HWND, menu HMENU, instance HINSTANCE, param unsafe.Pointer) HWND {
+func CreateWindowEx(exStyle uint, className, windowName *uint16, style uint, x, y, width, height int, parent HWND, menu HMENU, instance HINSTANCE, param unsafe.Pointer) HWND {
 	ret, _, _ := createWindowEx.Call(
 		uintptr(exStyle),
 		uintptr(unsafe.Pointer(className)),
@@ -1513,7 +1513,7 @@ func ShowCursor(show bool) int {
 
 func LoadImage(inst HINSTANCE, res uint32, typ uint32, cx, cy int, fuload uint32) HICON {
 	ret, _, _ := loadImage.Call(uintptr(inst), uintptr(res), uintptr(typ), uintptr(cx), uintptr(cy), uintptr(fuload))
-	return HANDLE(ret)
+	return HICON(ret)
 }
 
 func GetForegroundWindow() HWND {
